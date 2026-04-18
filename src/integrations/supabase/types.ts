@@ -62,27 +62,27 @@ export type Database = {
           },
         ]
       }
-      initiative_members: {
+      gather_members: {
         Row: {
           created_at: string
+          gather_id: string
           id: string
-          initiative_id: string
           status: Database["public"]["Enums"]["member_status"]
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          gather_id: string
           id?: string
-          initiative_id: string
           status?: Database["public"]["Enums"]["member_status"]
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          gather_id?: string
           id?: string
-          initiative_id?: string
           status?: Database["public"]["Enums"]["member_status"]
           updated_at?: string
           user_id?: string
@@ -90,9 +90,9 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "initiative_members_initiative_id_fkey"
-            columns: ["initiative_id"]
+            columns: ["gather_id"]
             isOneToOne: false
-            referencedRelation: "initiatives"
+            referencedRelation: "gathers"
             referencedColumns: ["id"]
           },
           {
@@ -104,27 +104,27 @@ export type Database = {
           },
         ]
       }
-      initiative_updates: {
+      gather_updates: {
         Row: {
           author_id: string
           body: string
           created_at: string
+          gather_id: string
           id: string
-          initiative_id: string
         }
         Insert: {
           author_id: string
           body: string
           created_at?: string
+          gather_id: string
           id?: string
-          initiative_id: string
         }
         Update: {
           author_id?: string
           body?: string
           created_at?: string
+          gather_id?: string
           id?: string
-          initiative_id?: string
         }
         Relationships: [
           {
@@ -136,14 +136,14 @@ export type Database = {
           },
           {
             foreignKeyName: "initiative_updates_initiative_id_fkey"
-            columns: ["initiative_id"]
+            columns: ["gather_id"]
             isOneToOne: false
-            referencedRelation: "initiatives"
+            referencedRelation: "gathers"
             referencedColumns: ["id"]
           },
         ]
       }
-      initiatives: {
+      gathers: {
         Row: {
           category: Database["public"]["Enums"]["initiative_category"]
           created_at: string
@@ -153,6 +153,7 @@ export type Database = {
           location: string | null
           min_mutuals: number
           size_cap: number
+          source_group_id: string | null
           starts_at: string
           title: string
           updated_at: string
@@ -166,6 +167,7 @@ export type Database = {
           location?: string | null
           min_mutuals?: number
           size_cap?: number
+          source_group_id?: string | null
           starts_at: string
           title: string
           updated_at?: string
@@ -179,14 +181,138 @@ export type Database = {
           location?: string | null
           min_mutuals?: number
           size_cap?: number
+          source_group_id?: string | null
           starts_at?: string
           title?: string
           updated_at?: string
         }
         Relationships: [
           {
+            foreignKeyName: "gathers_source_group_id_fkey"
+            columns: ["source_group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "initiatives_host_id_fkey"
             columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_members: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          status: Database["public"]["Enums"]["group_member_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          status?: Database["public"]["Enums"]["group_member_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          status?: Database["public"]["Enums"]["group_member_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_posts: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          group_id: string
+          id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          group_id: string
+          id?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_posts_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "groups_creator_id_fkey"
+            columns: ["creator_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -286,17 +412,23 @@ export type Database = {
     Functions: {
       are_connected: { Args: { u1: string; u2: string }; Returns: boolean }
       is_approved_member: {
-        Args: { _initiative: string; _user: string }
+        Args: { _gather: string; _user: string }
         Returns: boolean
       }
-      is_host: {
-        Args: { _initiative: string; _user: string }
+      is_group_creator: {
+        Args: { _group: string; _user: string }
         Returns: boolean
       }
+      is_group_member: {
+        Args: { _group: string; _user: string }
+        Returns: boolean
+      }
+      is_host: { Args: { _gather: string; _user: string }; Returns: boolean }
       mutual_count: { Args: { u1: string; u2: string }; Returns: number }
     }
     Enums: {
       connection_status: "pending" | "accepted" | "declined"
+      group_member_status: "invited" | "member" | "declined"
       initiative_category: "social" | "professional" | "events"
       member_status: "requested" | "approved" | "declined"
     }
@@ -427,6 +559,7 @@ export const Constants = {
   public: {
     Enums: {
       connection_status: ["pending", "accepted", "declined"],
+      group_member_status: ["invited", "member", "declined"],
       initiative_category: ["social", "professional", "events"],
       member_status: ["requested", "approved", "declined"],
     },

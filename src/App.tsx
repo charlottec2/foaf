@@ -6,10 +6,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RequireAuth } from "@/components/RequireAuth";
 import Auth from "./pages/Auth";
-import Feed from "./pages/Feed";
-import NewInitiative from "./pages/NewInitiative";
-import InitiativePage from "./pages/InitiativePage";
-import Connections from "./pages/Connections";
+import Home from "./pages/Home";
+import Gather from "./pages/Gather";
+import NewGather from "./pages/NewGather";
+import GatherPage from "./pages/GatherPage";
+import Groups from "./pages/Groups";
+import GroupPage from "./pages/GroupPage";
+import Circle from "./pages/Circle";
 import UserProfile from "./pages/UserProfile";
 import Me from "./pages/Me";
 import NotFound from "./pages/NotFound.tsx";
@@ -20,15 +23,18 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner theme="dark" position="top-center" />
+      <Sonner position="top-center" />
       <BrowserRouter>
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
-            <Route path="/" element={<RequireAuth><Feed /></RequireAuth>} />
-            <Route path="/new" element={<RequireAuth><NewInitiative /></RequireAuth>} />
-            <Route path="/i/:id" element={<RequireAuth><InitiativePage /></RequireAuth>} />
-            <Route path="/connections" element={<RequireAuth><Connections /></RequireAuth>} />
+            <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
+            <Route path="/gather" element={<RequireAuth><Gather /></RequireAuth>} />
+            <Route path="/gather/new" element={<RequireAuth><NewGather /></RequireAuth>} />
+            <Route path="/g/:id" element={<RequireAuth><GatherPage /></RequireAuth>} />
+            <Route path="/groups" element={<RequireAuth><Groups /></RequireAuth>} />
+            <Route path="/groups/:id" element={<RequireAuth><GroupPage /></RequireAuth>} />
+            <Route path="/circle" element={<RequireAuth><Circle /></RequireAuth>} />
             <Route path="/u/:handle" element={<RequireAuth><UserProfile /></RequireAuth>} />
             <Route path="/me" element={<RequireAuth><Me /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />

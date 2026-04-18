@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { ConnectionPath } from "./ConnectionPath";
 
-export type FeedInitiative = {
+export type FeedGather = {
   id: string;
   title: string;
   description: string | null;
@@ -10,10 +10,10 @@ export type FeedInitiative = {
   starts_at: string;
   location: string | null;
   size_cap: number;
+  source_group_id: string | null;
   host: { id: string; display_name: string; handle: string };
   pathNodes: { id: string; display_name: string; handle: string }[];
   attendeeCount: number;
-  unlockedReason?: string | null;
 };
 
 const fmtDate = (s: string) => {
@@ -33,11 +33,11 @@ const categoryLabel = {
   events: "EVENT",
 };
 
-export const InitiativeCard = ({ it }: { it: FeedInitiative }) => {
+export const GatherCard = ({ it }: { it: FeedGather }) => {
   return (
     <Link
-      to={`/i/${it.id}`}
-      className="group block overflow-hidden rounded-2xl border border-hairline bg-surface transition active:scale-[0.99]"
+      to={`/g/${it.id}`}
+      className="group block overflow-hidden rounded-2xl border border-hairline bg-surface transition active:scale-[0.99] hover:border-foreground/40"
     >
       <div className="flex items-center justify-between border-b border-hairline px-4 py-2.5">
         <span className="label-mono text-muted-foreground">{categoryLabel[it.category]}</span>
@@ -70,9 +70,6 @@ export const InitiativeCard = ({ it }: { it: FeedInitiative }) => {
 
         <div className="mt-4 border-t border-hairline pt-3">
           <ConnectionPath nodes={it.pathNodes} />
-          {it.unlockedReason && (
-            <p className="mt-2 font-mono text-[11px] text-signal">↑ {it.unlockedReason}</p>
-          )}
         </div>
       </div>
     </Link>

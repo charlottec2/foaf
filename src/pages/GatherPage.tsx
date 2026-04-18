@@ -10,7 +10,7 @@ import { shortestPath } from "@/lib/graph";
 import { Calendar, ChevronLeft, MapPin, Users } from "lucide-react";
 import { toast } from "sonner";
 
-type Initiative = {
+type Gather = {
   id: string;
   title: string;
   description: string | null;
@@ -20,6 +20,7 @@ type Initiative = {
   size_cap: number;
   min_mutuals: number;
   host_id: string;
+  source_group_id: string | null;
 };
 
 type Member = {
@@ -27,7 +28,7 @@ type Member = {
   user_id: string;
   status: "requested" | "approved" | "declined";
   profile: { id: string; handle: string; display_name: string };
-  viewerLabel?: string | null; // 2-word label as seen via viewer's connection
+  viewerLabel?: string | null;
 };
 
 const fmt = (s: string) =>
@@ -39,12 +40,13 @@ const fmt = (s: string) =>
     minute: "2-digit",
   });
 
-const InitiativePage = () => {
+const GatherPage = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const nav = useNavigate();
-  const [it, setIt] = useState<Initiative | null>(null);
+  const [it, setIt] = useState<Gather | null>(null);
   const [host, setHost] = useState<{ id: string; handle: string; display_name: string } | null>(null);
+  const [sourceGroupName, setSourceGroupName] = useState<string | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [pathNodes, setPathNodes] = useState<{ id: string; handle: string; display_name: string }[]>([]);
   const [myStatus, setMyStatus] = useState<Member["status"] | null>(null);
@@ -55,35 +57,40 @@ const InitiativePage = () => {
   const load = async () => {
     if (!id || !user) return;
     setLoading(true);
-    const { data: i, error } = await supabase
-      .from("initiatives")
+    const { data: g } = await supabase
+      .from("gathers")
       .select("*")
       .eq("id", id)
       .maybeSingle();
-    if (error || !i) {
+    if (!g) {
       toast.error("Not visible to you, or it doesn't exist");
       setLoading(false);
       return;
     }
-    setIt(i as any);
-    const { data: h } = await supabase.from("profiles").select("id, handle, display_name").eq("id", (i as any).host_id).maybeSingle();
+    setIt(g as any);
+    const { data: h } = await supabase.from("profiles").select("id, handle, display_name").eq("id", (g as any).host_id).maybeSingle();
     setHost(h as any);
 
-    // Path
-    if ((i as any).host_id === user.id) {
+    if ((g as any).source_group_id) {
+      const { data: gr } = await supabase.from("groups").select("name").eq("id", (g as any).source_group_id).maybeSingle();
+      setSourceGroupName((gr as any)?.name ?? null);
+    } else {
+      setSourceGroupName(null);
+    }
+
+    if ((g as any).host_id === user.id) {
       setPathNodes([]);
     } else {
-      const ids = (await shortestPath(user.id, (i as any).host_id, 4)) ?? [user.id, (i as any).host_id];
+      const ids = (await shortestPath(user.id, (g as any).host_id, 4)) ?? [user.id, (g as any).host_id];
       const { data: pp } = await supabase.from("profiles").select("id, handle, display_name").in("id", ids);
       const pmap = new Map((pp ?? []).map((p: any) => [p.id, p]));
       setPathNodes(ids.map((nid) => pmap.get(nid) ?? { id: nid, handle: "?", display_name: "someone" }));
     }
 
-    // Members + viewer's connection labels
     const { data: ms } = await supabase
-      .from("initiative_members")
+      .from("gather_members")
       .select("id, user_id, status")
-      .eq("initiative_id", id);
+      .eq("gather_id", id);
     const memberIds = (ms ?? []).map((m: any) => m.user_id);
     const { data: mProfiles } = await supabase
       .from("profiles")
@@ -91,7 +98,6 @@ const InitiativePage = () => {
       .in("id", memberIds.length ? memberIds : ["00000000-0000-0000-0000-000000000000"]);
     const mProfMap = new Map((mProfiles ?? []).map((p: any) => [p.id, p]));
 
-    // Pull connections between viewer and each member to surface label
     const { data: viewerConns } = await supabase
       .from("connections")
       .select("requester_id, addressee_id, requester_label, addressee_label, status")
@@ -104,8 +110,7 @@ const InitiativePage = () => {
           (x.addressee_id === user.id && x.requester_id === otherId)
       );
       if (!c) return null;
-      // Show the OTHER person's label (how they described you) as the trust signal
-      return c.requester_id === user.id ? c.addressee_label : c.requester_label;
+      return (c as any).requester_id === user.id ? (c as any).addressee_label : (c as any).requester_label;
     };
 
     const enrichedMembers: Member[] = (ms ?? []).map((m: any) => ({
@@ -119,13 +124,12 @@ const InitiativePage = () => {
     const mine = enrichedMembers.find((m) => m.user_id === user.id);
     setMyStatus(mine?.status ?? null);
 
-    // Updates (RLS will return only if approved or host)
     const { data: ups } = await supabase
-      .from("initiative_updates")
+      .from("gather_updates")
       .select("id, body, created_at")
-      .eq("initiative_id", id)
+      .eq("gather_id", id)
       .order("created_at", { ascending: false });
-    setUpdates(ups ?? []);
+    setUpdates((ups as any) ?? []);
 
     setLoading(false);
   };
@@ -137,8 +141,8 @@ const InitiativePage = () => {
 
   const requestJoin = async () => {
     if (!id || !user) return;
-    const { error } = await supabase.from("initiative_members").insert({
-      initiative_id: id,
+    const { error } = await supabase.from("gather_members").insert({
+      gather_id: id,
       user_id: user.id,
       status: "requested",
     });
@@ -150,20 +154,20 @@ const InitiativePage = () => {
   };
 
   const approve = async (memberId: string) => {
-    const { error } = await supabase.from("initiative_members").update({ status: "approved" }).eq("id", memberId);
+    const { error } = await supabase.from("gather_members").update({ status: "approved" }).eq("id", memberId);
     if (error) toast.error(error.message);
     else load();
   };
   const decline = async (memberId: string) => {
-    const { error } = await supabase.from("initiative_members").update({ status: "declined" }).eq("id", memberId);
+    const { error } = await supabase.from("gather_members").update({ status: "declined" }).eq("id", memberId);
     if (error) toast.error(error.message);
     else load();
   };
 
   const postUpdate = async () => {
     if (!it || !user || !updateBody.trim()) return;
-    const { error } = await supabase.from("initiative_updates").insert({
-      initiative_id: it.id,
+    const { error } = await supabase.from("gather_updates").insert({
+      gather_id: it.id,
       author_id: user.id,
       body: updateBody.trim(),
     });
@@ -185,8 +189,8 @@ const InitiativePage = () => {
     return (
       <MobileShell hideNav>
         <div className="container-mobile pt-10">
-          <p className="text-sm text-muted-foreground">This initiative isn't visible to you.</p>
-          <Button onClick={() => nav("/")} className="mt-4">Back to feed</Button>
+          <p className="text-sm text-muted-foreground">This Gather isn't visible to you.</p>
+          <Button onClick={() => nav("/")} className="mt-4">Home</Button>
         </div>
       </MobileShell>
     );
@@ -199,11 +203,10 @@ const InitiativePage = () => {
   return (
     <MobileShell hideNav>
       <div className="container-mobile pt-6">
-        <Link to="/" className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-          <ChevronLeft className="h-4 w-4" /> Feed
-        </Link>
+        <button onClick={() => nav(-1)} className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+          <ChevronLeft className="h-4 w-4" /> Back
+        </button>
 
-        {/* HERO */}
         <div className="mt-5 overflow-hidden rounded-3xl border border-hairline bg-surface">
           <div className="flex items-center justify-between border-b border-hairline px-5 py-3">
             <span className="label-mono text-muted-foreground">{it.category.toUpperCase()}</span>
@@ -211,12 +214,17 @@ const InitiativePage = () => {
           </div>
           <div className="px-5 pt-6 pb-5">
             <h1 className="text-[32px] font-bold leading-[1.05] tracking-tight">{it.title}</h1>
+            {sourceGroupName && (
+              <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                ↑ Opened from group · {sourceGroupName}
+              </p>
+            )}
             {it.description && <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">{it.description}</p>}
 
             <div className="mt-6 flex flex-col gap-2 font-mono text-[13px]">
-              <div className="flex items-center gap-2.5"><Calendar className="h-4 w-4 text-accent" />{fmt(it.starts_at)}</div>
-              {it.location && <div className="flex items-center gap-2.5"><MapPin className="h-4 w-4 text-accent" />{it.location}</div>}
-              <div className="flex items-center gap-2.5"><Users className="h-4 w-4 text-accent" />{approvedMembers.length}/{it.size_cap} going · min {it.min_mutuals} mutual</div>
+              <div className="flex items-center gap-2.5"><Calendar className="h-4 w-4" />{fmt(it.starts_at)}</div>
+              {it.location && <div className="flex items-center gap-2.5"><MapPin className="h-4 w-4" />{it.location}</div>}
+              <div className="flex items-center gap-2.5"><Users className="h-4 w-4" />{approvedMembers.length}/{it.size_cap} going · min {it.min_mutuals} mutual</div>
             </div>
 
             {pathNodes.length > 0 && (
@@ -227,7 +235,6 @@ const InitiativePage = () => {
           </div>
         </div>
 
-        {/* JOIN ACTION */}
         {!isHost && (
           <div className="mt-5">
             {myStatus === "approved" ? (
@@ -242,7 +249,6 @@ const InitiativePage = () => {
           </div>
         )}
 
-        {/* HOST: pending requests */}
         {isHost && pendingMembers.length > 0 && (
           <section className="mt-6">
             <p className="label-mono mb-2 text-muted-foreground">REQUESTS · {pendingMembers.length}</p>
@@ -255,7 +261,7 @@ const InitiativePage = () => {
                   </div>
                   <div className="flex gap-2">
                     <button onClick={() => decline(m.id)} className="rounded-md border border-hairline px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">No</button>
-                    <button onClick={() => approve(m.id)} className="rounded-md bg-foreground px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-background">Approve</button>
+                    <button onClick={() => approve(m.id)} className="rounded-md bg-primary px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-primary-foreground">Approve</button>
                   </div>
                 </div>
               ))}
@@ -263,7 +269,6 @@ const InitiativePage = () => {
           </section>
         )}
 
-        {/* ATTENDEES */}
         <section className="mt-6">
           <p className="label-mono mb-2 text-muted-foreground">GOING · {approvedMembers.length}</p>
           {approvedMembers.length === 0 && (
@@ -277,7 +282,7 @@ const InitiativePage = () => {
                   <p className="font-mono text-[11px] text-muted-foreground">@{m.profile.handle}</p>
                 </div>
                 {m.viewerLabel ? (
-                  <span className="rounded-full bg-accent px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-accent-foreground">
+                  <span className="rounded-full bg-primary px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-primary-foreground">
                     {m.viewerLabel}
                   </span>
                 ) : (
@@ -288,7 +293,6 @@ const InitiativePage = () => {
           </div>
         </section>
 
-        {/* SHARED SPACE: updates */}
         {(isHost || myStatus === "approved") && (
           <section className="mt-6">
             <p className="label-mono mb-2 text-muted-foreground">UPDATES</p>
@@ -321,4 +325,4 @@ const InitiativePage = () => {
   );
 };
 
-export default InitiativePage;
+export default GatherPage;

@@ -23,7 +23,7 @@ const Gather = () => {
 
   return (
     <MobileShell>
-      <header className="container-mobile sticky top-0 z-30 -mx-4 mb-3 bg-background/95 px-4 pt-6 pb-3 backdrop-blur">
+      <header className="container-mobile sticky top-0 z-30 mb-3 bg-background/95 pt-6 pb-3 backdrop-blur">
         <div className="flex items-end justify-between">
           <div>
             <p className="label-mono text-muted-foreground">GATHER</p>

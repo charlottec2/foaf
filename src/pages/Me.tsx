@@ -25,7 +25,6 @@ const Me = () => {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
-  const [mode, setMode] = useState<"social" | "professional" | "events">("social");
   const [stats, setStats] = useState({ connections: 0, hosting: 0, joined: 0, groups: 0 });
   const [codes, setCodes] = useState<{ code: string; used_by: string | null }[]>([]);
   const [incoming, setIncoming] = useState<Conn[]>([]);
@@ -35,7 +34,6 @@ const Me = () => {
     if (profile) {
       setDisplayName(profile.display_name);
       setBio(profile.bio ?? "");
-      setMode(profile.mode);
     }
   }, [profile]);
 
@@ -122,7 +120,7 @@ const Me = () => {
     if (!user) return;
     const { error } = await supabase
       .from("profiles")
-      .update({ display_name: displayName.trim(), bio: bio.trim() || null, mode })
+      .update({ display_name: displayName.trim(), bio: bio.trim() || null })
       .eq("id", user.id);
     if (error) toast.error(error.message);
     else { toast.success("Saved"); refreshProfile(); }
@@ -213,21 +211,6 @@ const Me = () => {
           <div>
             <Label htmlFor="bio" className="label-mono text-muted-foreground">Bio</Label>
             <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="mt-1.5" />
-          </div>
-          <div>
-            <Label className="label-mono text-muted-foreground">Mode</Label>
-            <div className="mt-1.5 grid grid-cols-3 gap-2">
-              {(["social", "professional", "events"] as const).map((m) => (
-                <button
-                  type="button"
-                  key={m}
-                  onClick={() => setMode(m)}
-                  className={`rounded-lg border px-3 py-2 text-xs uppercase tracking-wider font-mono ${mode === m ? "border-foreground bg-foreground text-background" : "border-hairline text-muted-foreground"}`}
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
           </div>
           <Button onClick={save} className="mt-3 h-12">Save</Button>
           <Button onClick={signOut} variant="ghost" className="text-muted-foreground">Sign out</Button>

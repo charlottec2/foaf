@@ -62,7 +62,7 @@ const Home = () => {
 
   return (
     <MobileShell>
-      <header className="container-mobile sticky top-0 z-30 -mx-4 mb-2 bg-background/95 px-4 pt-6 pb-3 backdrop-blur">
+      <header className="container-mobile sticky top-0 z-30 mb-2 bg-background/95 pt-6 pb-3 backdrop-blur">
         <p className="label-mono text-muted-foreground">HOME</p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight">
           {profile ? `Hi, ${profile.display_name.split(" ")[0]}` : "Welcome"}

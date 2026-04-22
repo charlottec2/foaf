@@ -118,7 +118,7 @@ const Circle = () => {
 
   return (
     <MobileShell>
-      <header className="container-mobile sticky top-0 z-30 -mx-4 mb-3 bg-background/95 px-4 pt-6 pb-3 backdrop-blur">
+      <header className="container-mobile sticky top-0 z-30 mb-3 bg-background/95 pt-6 pb-3 backdrop-blur">
         <p className="label-mono text-muted-foreground">CIRCLE</p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight">People you could know</h1>
         <p className="mt-1 text-xs text-muted-foreground">Friends-of-friends, ranked by closeness. No algorithm.</p>

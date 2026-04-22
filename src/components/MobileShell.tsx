@@ -6,7 +6,7 @@ export const MobileShell = ({ children, hideNav }: { children: ReactNode; hideNa
   return (
     <div className="min-h-screen bg-background">
       <UnlockBanner />
-      <main className={hideNav ? "pb-4" : "pb-24"}>{children}</main>
+      <main className={hideNav ? "pb-4" : "pb-32"}>{children}</main>
       {!hideNav && <BottomNav />}
     </div>
   );

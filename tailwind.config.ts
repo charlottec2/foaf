@@ -12,10 +12,13 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+        sans: ["DM Sans", "ui-sans-serif", "system-ui", "sans-serif"],
+        serif: ["Playfair Display", "ui-serif", "Georgia", "serif"],
+        // Remapped to DM Sans so existing font-mono classes remain valid during migration
+        mono: ["DM Sans", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       colors: {
+        // shadcn/radix vars (kept for component compatibility)
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -56,11 +59,32 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Design system tokens
+        brand: {
+          DEFAULT: "#C4733A",
+          light: "#F5E6D8",
+        },
+        page: "#FAF8F5",
+        cream: "#F5F0EA",
+        ink: {
+          DEFAULT: "#1A1714",
+          2: "#6B6560",
+          3: "#A09B96",
+        },
+        tabbar: "#212121",
+        sage: {
+          DEFAULT: "#D0DFCC",
+          text: "#3B5C35",
+        },
+        "soft-yellow": {
+          DEFAULT: "#F0F1A5",
+          text: "#5C5A1A",
+        },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "var(--radius)",         // 16px — cards
+        md: "calc(var(--radius) - 4px)", // 12px — inputs
+        sm: "8px",
       },
       keyframes: {
         "accordion-down": {

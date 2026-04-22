@@ -2,82 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Friend of a Friend — light theme, white canvas, black CTAs.
-   Keep the BeReal-style raw, mono-tinged metadata. All colors HSL. */
-
 @layer base {
   :root {
-    --background: 0 0% 100%;          /* white canvas */
-    --foreground: 0 0% 8%;            /* near black */
-    --surface: 0 0% 99%;              /* card */
-    --surface-2: 0 0% 96%;            /* elevated tint */
-    --hairline: 0 0% 90%;             /* subtle borders */
+    --background: 40 33% 97%;          /* #FAF8F5 warm off-white */
+    --foreground: 30 13% 9%;           /* #1A1714 */
+    --surface: 0 0% 100%;              /* #FFFFFF card */
+    --surface-2: 33 36% 94%;           /* #F5F0EA cream */
+    --hairline: 35 25% 91%;            /* #EDE8E1 */
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 8%;
+    --card-foreground: 30 13% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 8%;
+    --popover-foreground: 30 13% 9%;
 
-    --primary: 0 0% 8%;               /* black CTA */
+    --primary: 25 54% 50%;             /* #C4733A terracotta */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 8%;
+    --secondary: 33 36% 94%;           /* #F5F0EA cream */
+    --secondary-foreground: 30 13% 9%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 42%;
+    --muted: 33 36% 94%;
+    --muted-foreground: 27 5% 40%;     /* #6B6560 */
 
-    --accent: 0 0% 8%;                /* keep accent neutral / black */
+    --accent: 25 54% 50%;              /* #C4733A */
     --accent-foreground: 0 0% 100%;
 
-    --signal: 142 60% 36%;            /* unlock/connected green (darker for white bg) */
+    --signal: 142 60% 36%;             /* connected/unlocked green */
     --signal-foreground: 0 0% 100%;
 
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 92%;
-    --ring: 0 0% 8%;
+    --border: 35 25% 91%;              /* #EDE8E1 */
+    --input: 30 16% 85%;               /* #E0DAD4 */
+    --ring: 25 54% 50%;                /* #C4733A */
 
-    --radius: 0.875rem;
+    --radius: 1rem;                    /* 16px — card radius */
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 12%;
-    --sidebar-primary: 0 0% 8%;
+    --sidebar-background: 40 33% 97%;
+    --sidebar-foreground: 30 13% 9%;
+    --sidebar-primary: 25 54% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 12%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 0 0% 8%;
+    --sidebar-accent: 33 36% 94%;
+    --sidebar-accent-foreground: 30 13% 9%;
+    --sidebar-border: 35 25% 91%;
+    --sidebar-ring: 25 54% 50%;
   }
 
   .dark {
-    /* Mirror the light theme so any forced .dark doesn't break it. */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 8%;
-    --surface: 0 0% 99%;
-    --surface-2: 0 0% 96%;
-    --hairline: 0 0% 90%;
+    /* App is light-only — mirror light values so OS dark mode doesn't invert */
+    --background: 40 33% 97%;
+    --foreground: 30 13% 9%;
+    --surface: 0 0% 100%;
+    --surface-2: 33 36% 94%;
+    --hairline: 35 25% 91%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 8%;
+    --card-foreground: 30 13% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 8%;
-    --primary: 0 0% 8%;
+    --popover-foreground: 30 13% 9%;
+    --primary: 25 54% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 8%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 42%;
-    --accent: 0 0% 8%;
+    --secondary: 33 36% 94%;
+    --secondary-foreground: 30 13% 9%;
+    --muted: 33 36% 94%;
+    --muted-foreground: 27 5% 40%;
+    --accent: 25 54% 50%;
     --accent-foreground: 0 0% 100%;
     --signal: 142 60% 36%;
     --signal-foreground: 0 0% 100%;
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 90%;
-    --input: 0 0% 92%;
-    --ring: 0 0% 8%;
+    --border: 35 25% 91%;
+    --input: 30 16% 85%;
+    --ring: 25 54% 50%;
   }
 }
 
@@ -90,12 +87,9 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     overscroll-behavior-y: none;
-  }
-  .font-mono, code, pre, kbd {
-    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   }
 }
 
@@ -106,7 +100,50 @@
   .hairline {
     @apply border-t border-[hsl(var(--hairline))];
   }
+  /* Legacy — will be removed per-component during design pass */
   .label-mono {
-    @apply font-mono uppercase tracking-[0.12em] text-[10px];
+    @apply uppercase tracking-[0.12em] text-[10px];
+  }
+
+  /* Typography scale */
+  .text-screen-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: #1A1714;
+  }
+  .text-section-header {
+    font-size: 17px;
+    font-weight: 500;
+    color: #1A1714;
+  }
+  .text-card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1A1714;
+  }
+  .text-body {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+  .text-label {
+    font-size: 12px;
+    font-weight: 400;
+    color: #6B6560;
+  }
+  .text-btn {
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  /* Card surface */
+  .card-surface {
+    background: #FFFFFF;
+    border: 1px solid #EDE8E1;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   }
 }

@@ -12,10 +12,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["DM Sans", "ui-sans-serif", "system-ui", "sans-serif"],
-        serif: ["Playfair Display", "ui-serif", "Georgia", "serif"],
-        // Remapped to DM Sans so existing font-mono classes remain valid during migration
-        mono: ["DM Sans", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ['"DM Sans"', "ui-sans-serif", "system-ui", "sans-serif"],
+        serif: ['"Instrument Serif"', "Georgia", "serif"],
+        mono: ['"JetBrains Mono"', "ui-monospace", "Menlo", "monospace"],
       },
       colors: {
         // shadcn/radix vars (kept for component compatibility)
@@ -61,25 +60,17 @@ export default {
         },
         // Design system tokens
         brand: {
-          DEFAULT: "#C4733A",
-          light: "#F5E6D8",
-        },
-        page: "#FAF8F5",
-        cream: "#F5F0EA",
-        ink: {
-          DEFAULT: "#1A1714",
-          2: "#6B6560",
-          3: "#A09B96",
+          DEFAULT: "hsl(var(--accent))",
+          light: "hsl(var(--accent-soft))",
         },
         tabbar: "#212121",
-        sage: {
-          DEFAULT: "#D0DFCC",
-          text: "#3B5C35",
+        butter: "hsl(var(--butter))",
+        clay: {
+          DEFAULT: "hsl(var(--clay))",
+          soft: "hsl(var(--clay-soft))",
         },
-        "soft-yellow": {
-          DEFAULT: "#F0F1A5",
-          text: "#5C5A1A",
-        },
+        "accent-soft": "hsl(var(--accent-soft))",
+        "signal-soft": "hsl(var(--signal-soft))",
       },
       borderRadius: {
         lg: "var(--radius)",         // 16px — cards

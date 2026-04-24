@@ -1,27 +1,53 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ChevronLeft } from "lucide-react";
+import { ArrowLeft, X, CalendarBlank, MapPin, UsersThree, ShieldCheck, ArrowRight } from "@phosphor-icons/react";
 
-type Cat = "social" | "professional" | "events";
+const Stepper = ({
+  value,
+  onChange,
+  min = 0,
+  max = 200,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+  min?: number;
+  max?: number;
+}) => (
+  <div className="flex items-center gap-3">
+    <button
+      type="button"
+      onClick={() => onChange(Math.max(min, value - 1))}
+      className="w-8 h-8 rounded-full border border-hairline bg-surface flex items-center justify-center font-mono text-lg text-muted-foreground hover:border-foreground transition-colors"
+    >
+      −
+    </button>
+    <span className="font-serif text-[22px] font-medium w-8 text-center leading-none">{value}</span>
+    <button
+      type="button"
+      onClick={() => onChange(Math.min(max, value + 1))}
+      className="w-8 h-8 rounded-full border border-hairline bg-surface flex items-center justify-center font-mono text-lg text-muted-foreground hover:border-foreground transition-colors"
+    >
+      +
+    </button>
+  </div>
+);
 
 const NewGather = () => {
   const { user } = useAuth();
   const nav = useNavigate();
   const [params] = useSearchParams();
   const fromGroupId = params.get("fromGroup");
+  const tagInputRef = useRef<HTMLInputElement>(null);
 
   const [groupName, setGroupName] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<Cat>("social");
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
   const [startsAt, setStartsAt] = useState("");
   const [location, setLocation] = useState("");
   const [sizeCap, setSizeCap] = useState(8);
@@ -36,17 +62,40 @@ const NewGather = () => {
     })();
   }, [fromGroupId]);
 
+  const addTag = () => {
+    const val = tagInput.trim().replace(/,+$/, "").toLowerCase();
+    if (val && !tags.includes(val) && tags.length < 10) {
+      setTags((t) => [...t, val]);
+      setTagInput("");
+    } else {
+      setTagInput("");
+    }
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addTag();
+    } else if (e.key === "Backspace" && !tagInput && tags.length > 0) {
+      setTags((t) => t.slice(0, -1));
+    }
+  };
+
+  const removeTag = (tag: string) => setTags((t) => t.filter((x) => x !== tag));
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setBusy(true);
+
     const { data, error } = await supabase
       .from("gathers")
       .insert({
         host_id: user.id,
         title: title.trim(),
         description: description.trim() || null,
-        category,
+        category: "social" as any,
+        tags,
         starts_at: new Date(startsAt).toISOString(),
         location: location.trim() || null,
         size_cap: sizeCap,
@@ -55,6 +104,7 @@ const NewGather = () => {
       })
       .select("id")
       .single();
+
     if (error || !data) {
       toast.error(error?.message ?? "Couldn't create");
       setBusy(false);
@@ -63,19 +113,13 @@ const NewGather = () => {
 
     const newId = (data as any).id;
 
-    // If spawned from a group, auto-approve all current group members as attendees.
     if (fromGroupId) {
       const { data: members } = await supabase
-        .from("group_members")
-        .select("user_id")
-        .eq("group_id", fromGroupId)
-        .eq("status", "member");
+        .from("group_members").select("user_id")
+        .eq("group_id", fromGroupId).eq("status", "member");
       const rows = (members ?? []).map((m: any) => ({
-        gather_id: newId,
-        user_id: m.user_id,
-        status: "approved" as const,
+        gather_id: newId, user_id: m.user_id, status: "approved" as const,
       }));
-      // Ensure host is in there too
       if (!rows.find((r) => r.user_id === user.id)) {
         rows.push({ gather_id: newId, user_id: user.id, status: "approved" as const });
       }
@@ -85,73 +129,162 @@ const NewGather = () => {
     }
 
     setBusy(false);
-    toast.success("Gather posted");
+    toast.success("Function posted");
     nav(`/g/${newId}`, { replace: true });
   };
 
   return (
     <MobileShell hideNav>
-      <div className="container-mobile pt-6">
-        <Link to={fromGroupId ? `/groups/${fromGroupId}` : "/gather"} className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-          <ChevronLeft className="h-4 w-4" /> Back
+      <div className="container-mobile pt-6 pb-10">
+
+        {/* Back */}
+        <Link
+          to={fromGroupId ? `/groups/${fromGroupId}` : "/gather"}
+          className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
+        >
+          <ArrowLeft size={14} weight="bold" /> Back
         </Link>
-        <h1 className="mt-4 text-2xl font-bold tracking-tight">New Gather</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+
+        {/* Header */}
+        <h1 className="mt-4 font-serif text-[26px] font-medium leading-tight">Create Function</h1>
+        <p className="mt-1.5 font-mono text-[11px] text-muted-foreground">
           {groupName ? (
-            <>Opening to friends-of-friends from <span className="font-medium text-foreground">{groupName}</span>. Group members are auto-approved.</>
+            <>From <span className="text-foreground font-medium">{groupName}</span> · group members auto-approved</>
           ) : (
-            <>Visible only to people who share enough mutual connections with you.</>
+            <>Visible only to people in your extended network</>
           )}
         </p>
 
-        <form onSubmit={submit} className="mt-6 flex flex-col gap-4">
+        <form onSubmit={submit} className="mt-6 flex flex-col gap-5">
+
+          {/* Title — editorial serif input */}
           <div>
-            <Label htmlFor="t" className="label-mono text-muted-foreground">Title</Label>
-            <Input id="t" value={title} onChange={(e) => setTitle(e.target.value)} required className="mt-1.5" placeholder="Sunday long run, 8am" />
+            <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-muted-foreground mb-2">Title</p>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              placeholder="Sunday Run & Brunch!"
+              className="font-serif text-[22px] font-medium w-full bg-transparent outline-none placeholder:text-muted-foreground border-b-2 border-dashed pb-2 leading-tight"
+              style={{ borderColor: "hsl(var(--accent))" }}
+            />
           </div>
+
+          {/* Description */}
           <div>
-            <Label htmlFor="d" className="label-mono text-muted-foreground">Description</Label>
-            <Textarea id="d" value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="mt-1.5" placeholder="What's the vibe?" />
+            <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-muted-foreground mb-2">Description</p>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              placeholder="What's the vibe?"
+              className="font-serif italic text-[15px] leading-[1.5] w-full bg-transparent outline-none placeholder:text-muted-foreground border-b border-dashed resize-none pb-2"
+              style={{ borderColor: "hsl(var(--hairline))" }}
+            />
           </div>
+
+          {/* Tags */}
           <div>
-            <Label className="label-mono text-muted-foreground">Category</Label>
-            <div className="mt-1.5 grid grid-cols-3 gap-2">
-              {(["social", "professional", "events"] as Cat[]).map((c) => (
-                <button
-                  type="button"
-                  key={c}
-                  onClick={() => setCategory(c)}
-                  className={`rounded-lg border px-3 py-2 text-xs uppercase tracking-wider font-mono ${category === c ? "border-foreground bg-foreground text-background" : "border-hairline text-muted-foreground"}`}
+            <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-muted-foreground mb-2">
+              Tags
+              <span className="ml-2 text-muted-foreground/60">{tags.length}/10</span>
+            </p>
+            <div
+              className="rounded-[16px] border border-hairline bg-surface p-3 flex flex-wrap gap-2 cursor-text"
+              onClick={() => tagInputRef.current?.focus()}
+            >
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.1em] px-2.5 py-1 rounded-full"
+                  style={{ background: "hsl(var(--accent-soft))", color: "hsl(var(--foreground))" }}
                 >
-                  {c}
-                </button>
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); removeTag(tag); }}
+                    className="opacity-50 hover:opacity-100 transition-opacity"
+                    aria-label={`Remove ${tag}`}
+                  >
+                    <X size={10} weight="bold" />
+                  </button>
+                </span>
               ))}
+              {tags.length < 10 && (
+                <input
+                  ref={tagInputRef}
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                  onBlur={addTag}
+                  placeholder={tags.length === 0 ? "Add a tag, press enter…" : ""}
+                  className="font-mono text-[11px] bg-transparent outline-none placeholder:text-muted-foreground flex-1 min-w-[120px]"
+                />
+              )}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+
+          {/* When & Where */}
+          <div className="rounded-[20px] border border-hairline bg-surface p-4 flex flex-col gap-4">
             <div>
-              <Label htmlFor="s" className="label-mono text-muted-foreground">Date & time</Label>
-              <Input id="s" type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} required className="mt-1.5" />
+              <div className="flex items-center gap-1.5 mb-2">
+                <CalendarBlank size={13} className="text-muted-foreground" />
+                <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-muted-foreground">Date & time</p>
+              </div>
+              <input
+                type="datetime-local"
+                value={startsAt}
+                onChange={(e) => setStartsAt(e.target.value)}
+                required
+                className="font-mono text-[13px] bg-transparent outline-none w-full text-foreground"
+              />
             </div>
-            <div>
-              <Label htmlFor="loc" className="label-mono text-muted-foreground">Location</Label>
-              <Input id="loc" value={location} onChange={(e) => setLocation(e.target.value)} className="mt-1.5" placeholder="Hyde Park" />
+            <div className="border-t border-dashed border-hairline pt-4">
+              <div className="flex items-center gap-1.5 mb-2">
+                <MapPin size={13} className="text-muted-foreground" />
+                <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-muted-foreground">Location</p>
+              </div>
+              <input
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="King's Circle, Toronto..."
+                className="font-mono text-[13px] bg-transparent outline-none w-full placeholder:text-muted-foreground"
+              />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+
+          {/* Gate settings */}
+          <div className="rounded-[20px] border border-hairline bg-surface p-4 flex flex-col gap-4">
             <div>
-              <Label htmlFor="cap" className="label-mono text-muted-foreground">Size cap</Label>
-              <Input id="cap" type="number" min={1} max={200} value={sizeCap} onChange={(e) => setSizeCap(parseInt(e.target.value || "1"))} className="mt-1.5" />
+              <div className="flex items-center gap-1.5 mb-3">
+                <UsersThree size={13} className="text-muted-foreground" />
+                <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-muted-foreground">Capacity</p>
+              </div>
+              <Stepper value={sizeCap} onChange={setSizeCap} min={1} max={200} />
             </div>
-            <div>
-              <Label htmlFor="mm" className="label-mono text-muted-foreground">Min mutuals</Label>
-              <Input id="mm" type="number" min={0} max={10} value={minMutuals} onChange={(e) => setMinMutuals(parseInt(e.target.value || "0"))} className="mt-1.5" />
+            <div className="border-t border-dashed border-hairline pt-4">
+              <div className="flex items-center gap-1.5 mb-3">
+                <ShieldCheck size={13} className="text-muted-foreground" />
+                <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-muted-foreground">Min mutuals</p>
+              </div>
+              <Stepper value={minMutuals} onChange={setMinMutuals} min={0} max={10} />
+              <p className="mt-3 font-mono text-[10px] text-muted-foreground leading-relaxed">
+                {minMutuals === 0
+                  ? "Anyone in your extended graph can see this gather."
+                  : `Only people with ${minMutuals}+ mutual connection${minMutuals > 1 ? "s" : ""} with you can see this post.`}
+              </p>
             </div>
           </div>
-          <p className="font-mono text-[11px] text-muted-foreground">
-            Higher mutual = stricter trust gate. 0 means anyone in your extended graph can see it.
-          </p>
-          <Button type="submit" disabled={busy} className="mt-4 h-12">{busy ? "…" : "Post Gather"}</Button>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={busy}
+            className="mt-1 w-full inline-flex items-center justify-center gap-2 font-mono text-[12px] uppercase tracking-[0.14em] bg-foreground text-background py-4 rounded-full disabled:opacity-50 transition-opacity"
+          >
+            {busy ? "Posting…" : <>Post Function <ArrowRight size={13} weight="bold" /></>}
+          </button>
+
         </form>
       </div>
     </MobileShell>

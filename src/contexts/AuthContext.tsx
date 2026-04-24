@@ -9,6 +9,8 @@ type Profile = {
   bio: string | null;
   mode: "social" | "professional" | "events";
   invited_by: string | null;
+  avatar_url: string | null;
+  banner_url: string | null;
 };
 
 type AuthCtx = {

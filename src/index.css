@@ -4,77 +4,89 @@
 
 @layer base {
   :root {
-    --background: 40 33% 97%;          /* #FAF8F5 warm off-white */
-    --foreground: 30 13% 9%;           /* #1A1714 */
+    --background: 38 54% 95%;          /* #F9F3EA cotton beige */
+    --foreground: 32 24% 10%;          /* #1F1A12 warm near-black */
     --surface: 0 0% 100%;              /* #FFFFFF card */
-    --surface-2: 33 36% 94%;           /* #F5F0EA cream */
-    --hairline: 35 25% 91%;            /* #EDE8E1 */
+    --surface-2: 48 100% 87%;          /* #FFF1BF sky butter */
+    --hairline: 39 37% 86%;            /* #EAE0CF */
 
     --card: 0 0% 100%;
-    --card-foreground: 30 13% 9%;
+    --card-foreground: 32 24% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 30 13% 9%;
+    --popover-foreground: 32 24% 10%;
 
-    --primary: 25 54% 50%;             /* #C4733A terracotta */
+    --primary: 32 24% 10%;             /* #1F1A12 warm black CTA */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 33 36% 94%;           /* #F5F0EA cream */
-    --secondary-foreground: 30 13% 9%;
+    --secondary: 38 25% 87%;           /* #E8E1D6 clay soft */
+    --secondary-foreground: 32 24% 10%;
 
-    --muted: 33 36% 94%;
-    --muted-foreground: 27 5% 40%;     /* #6B6560 */
+    --muted: 38 25% 87%;
+    --muted-foreground: 33 10% 49%;    /* #8A8073 warm grey */
 
-    --accent: 25 54% 50%;              /* #C4733A */
-    --accent-foreground: 0 0% 100%;
+    --accent: 28 100% 66%;             /* #FFA552 sorbet orange */
+    --accent-foreground: 32 24% 10%;
+    --accent-soft: 30 100% 89%;        /* #FFE4C7 */
 
-    --signal: 142 60% 36%;             /* connected/unlocked green */
+    --clay: 36 17% 71%;                /* #C3B6A5 river clay */
+    --clay-soft: 38 25% 87%;           /* #E8E1D6 */
+
+    --butter: 48 100% 87%;             /* #FFF1BF sky butter */
+
+    --signal: 95 22% 45%;              /* #6B8A5A connected green */
     --signal-foreground: 0 0% 100%;
+    --signal-soft: 75 24% 89%;         /* #E6EBDC */
 
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 35 25% 91%;              /* #EDE8E1 */
-    --input: 30 16% 85%;               /* #E0DAD4 */
-    --ring: 25 54% 50%;                /* #C4733A */
+    --border: 39 37% 86%;              /* #EAE0CF */
+    --input: 39 37% 86%;
+    --ring: 28 100% 66%;               /* #FFA552 */
 
     --radius: 1rem;                    /* 16px — card radius */
 
-    --sidebar-background: 40 33% 97%;
-    --sidebar-foreground: 30 13% 9%;
-    --sidebar-primary: 25 54% 50%;
+    --sidebar-background: 38 54% 95%;
+    --sidebar-foreground: 32 24% 10%;
+    --sidebar-primary: 32 24% 10%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 33 36% 94%;
-    --sidebar-accent-foreground: 30 13% 9%;
-    --sidebar-border: 35 25% 91%;
-    --sidebar-ring: 25 54% 50%;
+    --sidebar-accent: 38 25% 87%;
+    --sidebar-accent-foreground: 32 24% 10%;
+    --sidebar-border: 39 37% 86%;
+    --sidebar-ring: 28 100% 66%;
   }
 
   .dark {
-    /* App is light-only — mirror light values so OS dark mode doesn't invert */
-    --background: 40 33% 97%;
-    --foreground: 30 13% 9%;
+    /* App is light-only — mirror light so OS dark mode doesn't invert */
+    --background: 38 54% 95%;
+    --foreground: 32 24% 10%;
     --surface: 0 0% 100%;
-    --surface-2: 33 36% 94%;
-    --hairline: 35 25% 91%;
+    --surface-2: 48 100% 87%;
+    --hairline: 39 37% 86%;
     --card: 0 0% 100%;
-    --card-foreground: 30 13% 9%;
+    --card-foreground: 32 24% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 30 13% 9%;
-    --primary: 25 54% 50%;
+    --popover-foreground: 32 24% 10%;
+    --primary: 32 24% 10%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 33 36% 94%;
-    --secondary-foreground: 30 13% 9%;
-    --muted: 33 36% 94%;
-    --muted-foreground: 27 5% 40%;
-    --accent: 25 54% 50%;
-    --accent-foreground: 0 0% 100%;
-    --signal: 142 60% 36%;
+    --secondary: 38 25% 87%;
+    --secondary-foreground: 32 24% 10%;
+    --muted: 38 25% 87%;
+    --muted-foreground: 33 10% 49%;
+    --accent: 28 100% 66%;
+    --accent-foreground: 32 24% 10%;
+    --accent-soft: 30 100% 89%;
+    --clay: 36 17% 71%;
+    --clay-soft: 38 25% 87%;
+    --butter: 48 100% 87%;
+    --signal: 95 22% 45%;
     --signal-foreground: 0 0% 100%;
+    --signal-soft: 75 24% 89%;
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 35 25% 91%;
-    --input: 30 16% 85%;
-    --ring: 25 54% 50%;
+    --border: 39 37% 86%;
+    --input: 39 37% 86%;
+    --ring: 28 100% 66%;
   }
 }
 
